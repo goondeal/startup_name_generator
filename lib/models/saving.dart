@@ -1,31 +1,61 @@
 import 'dart:io';
 import 'dart:async';
 
-//import 'package:path/path.dart' as path;
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:english_words/english_words.dart';
 
-//final String pathSuffix = 'startup/storage';
 
-class Saving {
+class Saving with ChangeNotifier{
   // it is just a class with some methods to read from
   // and write to the saving file.
 
-  // private method its function is to get the path of the app storage folder
+  final Set<WordPair> saved = Set();
 
-  Future<String> get localPath async {
+  void add(WordPair wp){
+    saved.add(wp);
+    notifyListeners();
+  }
+  
+  void remove(WordPair wp){
+    saved.remove(wp);
+    notifyListeners();
+  }
+
+  bool isSaved(WordPair wp) => saved.contains(wp);
+
+  void loadSaved(){
+    readSaved().then((res) {
+      if (res.isNotEmpty) {
+      processFromRead(res).forEach((wp) => saved.add(wp));
+      }
+      notifyListeners();
+    }).catchError((e) {
+      print(e.toString());
+    });
+  }
+
+  void saveSaved(){
+    final res = processToWrite(saved);
+    writeSaved(res);
+    notifyListeners();
+    print('from didChangeAppLifecycleState() method: _saved saved ');
+  }
+
+  // private method its function is to get the path of the app storage folder
+  Future<String> get _localPath async {
     final dir = await getApplicationDocumentsDirectory();
     return dir.path;
   }
 
-  Future<File> get localFile async {
-    final path = await localPath;
+  Future<File> get _localFile async {
+    final path = await _localPath;
     return File('$path/db.txt');
   }
 
   Future<String> readSaved() async {
     try {
-      final file = await localFile;
+      final file = await _localFile;
       String body = await file.readAsString();
       return body;
     } catch (e) {
@@ -37,7 +67,7 @@ class Saving {
     try {
       return read
           .substring(1, read.length - 1)
-          .replaceAll(RegExp(r"\s+\b|\b\s"), "")
+          .replaceAll(RegExp(r"\s+\b|\b\s"), "") //remove all spaces
           .split(',')
           .map((s) => WordPair(s, ' '))
           .toSet();
@@ -56,16 +86,8 @@ class Saving {
   }
 
   Future<File> writeSaved(String saved) async {
-    final file = await localFile;
-    print('write to file');
+    final file = await _localFile;
     return file.writeAsString(saved);
   }
+
 }
-// Fluttertoast.showToast(
-//           msg: "_saved loaded $_saved",
-//           toastLength: Toast.LENGTH_LONG,
-//           gravity: ToastGravity.CENTER,
-//           timeInSecForIos: 1,
-//           backgroundColor: Colors.red,
-//           textColor: Colors.white,
-//           fontSize: 16.0);
