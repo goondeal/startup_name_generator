@@ -1,6 +1,16 @@
-# testapp
+# Startup Name Generator
 
-A new Flutter project.
+A Flutter application inspired from this [flutter codelab](https://codelabs.developers.google.com/codelabs/first-flutter-app-pt2/#0).
+
+## Screenshots
+See screenshots folder
+
+## features
+- Cool UI & UX.
+- Using external packages.
+- Data Persistence with internal storage.
+- Provider Package for State management.
+
 
 ## Getting Started
 
